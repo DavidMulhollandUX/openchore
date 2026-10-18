@@ -158,6 +158,9 @@ Requires an authenticated caller with the `admin` role.
 |--------|------|-------------|
 | `GET` | `/api/points/balances` | Every user's balance |
 | `POST` | `/api/points/adjust` | Manual credit or debit |
+| `GET` `POST` | `/api/behaviours` | List / create behaviours (`name`, signed `points`) |
+| `PUT` `DELETE` | `/api/behaviours/{id}` | Update / delete a behaviour; past ledger rows are kept |
+| `POST` | `/api/behaviours/{id}/apply` | Apply a behaviour to `user_id` (optional `note`); writes a `behaviour` ledger row |
 | `GET` `PUT` | `/api/admin/users/{id}/decay` | Per-user decay configuration |
 | `GET` | `/api/rewards/all` | All rewards, including hidden ones |
 | `POST` | `/api/rewards` | Create a reward |

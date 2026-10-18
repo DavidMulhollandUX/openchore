@@ -31,6 +31,7 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 	points := NewPointsHandler(s)
 	rewards := NewRewardHandler(s, dispatcher)
 	streaks := NewStreakHandler(s)
+	behaviours := NewBehaviourHandler(s)
 	webhooks := NewWebhookHandler(s)
 	triggers := NewTriggerHandler(s)
 	tokens := NewTokenHandler(s)
@@ -153,6 +154,14 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 				r.Post("/points/adjust", points.Adjust)
 				r.Get("/admin/users/{id}/decay", points.GetDecayConfig)
 				r.Put("/admin/users/{id}/decay", points.SetDecayConfig)
+
+				// Behaviours: a fixed list of good and bad behaviours with
+				// point values, applied to a person in one tap
+				r.Get("/behaviours", behaviours.List)
+				r.Post("/behaviours", behaviours.Create)
+				r.Put("/behaviours/{id}", behaviours.Update)
+				r.Delete("/behaviours/{id}", behaviours.Delete)
+				r.Post("/behaviours/{id}/apply", behaviours.Apply)
 
 				// Rewards management
 				r.Get("/rewards/all", rewards.ListAll)

@@ -12,6 +12,7 @@
       "minutesAgo_other": "{{count}}m ago",
       "reason": {
         "admin_adjust": "Admin adjustment",
+        "behaviour": "Behaviour",
         "chore_complete": "Chore completed",
         "chore_uncomplete": "Chore undone",
         "commit_to_goal": "Saved toward a goal",
@@ -366,15 +367,28 @@
       "wouldWait": "Would wait for a parent"
     },
     "pointsTab": {
+      "addBehaviour": "Add behaviour",
       "adjustButton": "Adjust",
       "amountLabel": "Amount (+/-)",
       "amountPlaceholder": "+10 or -5",
+      "appliedMessage": "{{behaviour}} {{points}} for {{name}}",
       "applyButton": "Apply",
+      "behaviourName": "Behaviour",
+      "behaviourNamePlaceholder": "Hitting, Kind to sibling…",
+      "behaviourPointsPlaceholder": "+5 or -10",
+      "behavioursFor": "Behaviours for {{name}}",
+      "behavioursSubtitle": "Good and bad behaviours with fixed points. Tap one on a person's card to apply it.",
+      "behavioursTitle": "Behaviours",
       "cancelButton": "Cancel",
+      "deleteBehaviour": "Delete {{name}}",
+      "editBehaviour": "Edit {{name}}",
       "heading": "Points",
+      "noBehaviours": "No behaviours yet. Add a few, like \"Kind to sibling +5\" or \"Hitting −10\".",
       "reasonLabel": "Reason",
       "reasonPlaceholder": "Why?",
-      "subtitle": "Every change is kept in the activity log."
+      "saveBehaviour": "Save",
+      "subtitle": "Every change is kept in the activity log.",
+      "undoButton": "Undo"
     },
     "rewardsTab": {
       "add": "Add",
