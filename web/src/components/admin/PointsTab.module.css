@@ -46,3 +46,40 @@
 .form > :first-child {
   align-self: stretch;
 }
+
+/* One-tap behaviours on each person's card. */
+.behaviours {
+  margin-bottom: var(--space-3);
+}
+
+.chipPoints {
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.behaviours .chipBad {
+  color: var(--urgent);
+  border-color: currentColor;
+}
+
+.applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  font-weight: 600;
+}
+
+/* The behaviour list's point value column. */
+.points {
+  min-width: 48px;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pointsBad {
+  color: var(--urgent);
+}

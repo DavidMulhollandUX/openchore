@@ -198,6 +198,7 @@ skin.
 - Savings commitments and pools
 - Streak milestones
 - Configurable decay and penalties
+- Behaviours list: one-tap good and bad behaviours with fixed points
 
 </td><td valign="top" width="33%">
 

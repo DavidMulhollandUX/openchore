@@ -199,9 +199,18 @@ export interface PointTransaction {
   id: number;
   user_id: number;
   amount: number;
-  reason: 'chore_complete' | 'chore_uncomplete' | 'reward_redeem' | 'streak_bonus' | 'admin_adjust' | 'expiry_penalty' | 'points_decay' | 'missed_chore' | 'commit_to_goal' | 'goal_break';
+  reason: 'chore_complete' | 'chore_uncomplete' | 'reward_redeem' | 'streak_bonus' | 'admin_adjust' | 'expiry_penalty' | 'points_decay' | 'missed_chore' | 'commit_to_goal' | 'goal_break' | 'behaviour';
   reference_id?: number;
   note?: string;
+  created_at: string;
+}
+
+/** A parent-defined behaviour worth a fixed number of points (negative for misbehaviour). */
+export interface Behaviour {
+  id: number;
+  name: string;
+  points: number;
+  sort_order: number;
   created_at: string;
 }
 

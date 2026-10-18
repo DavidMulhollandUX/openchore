@@ -1321,6 +1321,84 @@ func (s *Store) AdminAdjustPoints(ctx context.Context, userID int64, amount int,
 	return err
 }
 
+// --- Behaviours ---
+
+func (s *Store) ListBehaviours(ctx context.Context) ([]model.Behaviour, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT id, name, points, sort_order, created_at FROM behaviours
+		 ORDER BY points > 0 DESC, sort_order, name`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []model.Behaviour
+	for rows.Next() {
+		var b model.Behaviour
+		if err := rows.Scan(&b.ID, &b.Name, &b.Points, &b.SortOrder, &b.CreatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, b)
+	}
+	return out, rows.Err()
+}
+
+func (s *Store) GetBehaviour(ctx context.Context, id int64) (*model.Behaviour, error) {
+	b := &model.Behaviour{}
+	err := s.db.QueryRowContext(ctx,
+		`SELECT id, name, points, sort_order, created_at FROM behaviours WHERE id = ?`, id).
+		Scan(&b.ID, &b.Name, &b.Points, &b.SortOrder, &b.CreatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return b, err
+}
+
+func (s *Store) CreateBehaviour(ctx context.Context, b *model.Behaviour) error {
+	res, err := s.db.ExecContext(ctx,
+		`INSERT INTO behaviours (name, points, sort_order) VALUES (?, ?, ?)`,
+		b.Name, b.Points, b.SortOrder)
+	if err != nil {
+		return err
+	}
+	b.ID, _ = res.LastInsertId()
+	return nil
+}
+
+func (s *Store) UpdateBehaviour(ctx context.Context, b *model.Behaviour) error {
+	_, err := s.db.ExecContext(ctx,
+		`UPDATE behaviours SET name = ?, points = ?, sort_order = ? WHERE id = ?`,
+		b.Name, b.Points, b.SortOrder, b.ID)
+	return err
+}
+
+// DeleteBehaviour removes the behaviour from the list. Ledger rows that
+// referenced it keep their amount and note.
+func (s *Store) DeleteBehaviour(ctx context.Context, id int64) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM behaviours WHERE id = ?`, id)
+	return err
+}
+
+// ApplyBehaviour records the behaviour's points for a user. The note is the
+// behaviour's name, plus any extra detail the parent typed.
+func (s *Store) ApplyBehaviour(ctx context.Context, userID int64, b *model.Behaviour, detail string) (*model.PointTransaction, error) {
+	note := b.Name
+	if detail != "" {
+		note += " — " + detail
+	}
+	res, err := s.db.ExecContext(ctx,
+		`INSERT INTO point_transactions (user_id, amount, reason, reference_id, note)
+		 VALUES (?, ?, ?, ?, ?)`, userID, b.Points, model.ReasonBehaviour, b.ID, note)
+	if err != nil {
+		return nil, err
+	}
+	id, _ := res.LastInsertId()
+	ref := b.ID
+	return &model.PointTransaction{
+		ID: id, UserID: userID, Amount: b.Points, Reason: model.ReasonBehaviour,
+		ReferenceID: &ref, Note: note, CreatedAt: time.Now().UTC(),
+	}, nil
+}
+
 // --- Rewards ---
 
 func (s *Store) CreateReward(ctx context.Context, r *model.Reward) error {

@@ -1,4 +1,4 @@
-import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions } from './types';
+import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PointTransaction, Behaviour, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions } from './types';
 
 const API_BASE = '/api';
 
@@ -244,6 +244,19 @@ export const api = {
       fetchWithAuth('/points/adjust', {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, amount, note }),
+      }),
+  },
+  behaviours: {
+    list: () => fetchWithAuth<Behaviour[]>('/behaviours'),
+    create: (data: { name: string; points: number }) =>
+      fetchWithAuth<Behaviour>('/behaviours', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: { name: string; points: number; sort_order?: number }) =>
+      fetchWithAuth<Behaviour>(`/behaviours/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    remove: (id: number) => fetchWithAuth(`/behaviours/${id}`, { method: 'DELETE' }),
+    apply: (id: number, userId: number) =>
+      fetchWithAuth<PointTransaction>(`/behaviours/${id}/apply`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
       }),
   },
   rewards: {

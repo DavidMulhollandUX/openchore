@@ -31,6 +31,7 @@ const (
 	ReasonMissedChore     = "missed_chore"
 	ReasonCommitToGoal    = "commit_to_goal"
 	ReasonGoalBreak       = "goal_break"
+	ReasonBehaviour       = "behaviour"
 )
 
 // Commitment statuses
@@ -324,6 +325,16 @@ type StreakReward struct {
 	StreakDays  int    `json:"streak_days"`
 	BonusPoints int    `json:"bonus_points"`
 	Label       string `json:"label"`
+}
+
+// Behaviour is a parent-defined behaviour worth a fixed number of points:
+// positive for good behaviour, negative for misbehaviour.
+type Behaviour struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Points    int       `json:"points"`
+	SortOrder int       `json:"sort_order"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // --- Decay ---

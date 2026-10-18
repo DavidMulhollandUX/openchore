@@ -12,6 +12,7 @@
       "minutesAgo_other": "vor {{count}} Min.",
       "reason": {
         "admin_adjust": "Admin-Anpassung",
+        "behaviour": "Verhalten",
         "chore_complete": "Aufgabe erledigt",
         "chore_uncomplete": "Aufgabe zurückgesetzt",
         "commit_to_goal": "Für ein Ziel gespart",
@@ -366,15 +367,28 @@
       "wouldWait": "Würde auf ein Elternteil warten"
     },
     "pointsTab": {
+      "addBehaviour": "Verhalten hinzufügen",
       "adjustButton": "Anpassen",
       "amountLabel": "Betrag (+/-)",
       "amountPlaceholder": "+10 oder -5",
+      "appliedMessage": "{{behaviour}} {{points}} für {{name}}",
       "applyButton": "Übernehmen",
+      "behaviourName": "Verhalten",
+      "behaviourNamePlaceholder": "Hauen, Nett zum Geschwister…",
+      "behaviourPointsPlaceholder": "+5 oder -10",
+      "behavioursFor": "Verhalten für {{name}}",
+      "behavioursSubtitle": "Gutes und schlechtes Verhalten mit festen Punkten. Tippe auf der Karte einer Person darauf, um es anzuwenden.",
+      "behavioursTitle": "Verhalten",
       "cancelButton": "Abbrechen",
+      "deleteBehaviour": "{{name}} löschen",
+      "editBehaviour": "{{name}} bearbeiten",
       "heading": "Punkte",
+      "noBehaviours": "Noch kein Verhalten. Füge z. B. „Nett zum Geschwister +5“ oder „Hauen −10“ hinzu.",
       "reasonLabel": "Grund",
       "reasonPlaceholder": "Warum?",
-      "subtitle": "Jede Änderung steht im Aktivitätsprotokoll."
+      "saveBehaviour": "Speichern",
+      "subtitle": "Jede Änderung steht im Aktivitätsprotokoll.",
+      "undoButton": "Rückgängig"
     },
     "rewardsTab": {
       "add": "Hinzufügen",
