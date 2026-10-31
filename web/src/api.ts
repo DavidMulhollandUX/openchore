@@ -1,4 +1,4 @@
-import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PointTransaction, Behaviour, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions } from './types';
+import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PointTransaction, Behaviour, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions, MealsStatus, Meal, MealType, MealRecipe, ShoppingList } from './types';
 
 const API_BASE = '/api';
 
@@ -409,5 +409,19 @@ export const api = {
       }),
     delete: (id: number) => fetchWithAuth(`/admin/webhooks/${id}`, { method: 'DELETE' }),
     listDeliveries: (id: number) => fetchWithAuth<WebhookDelivery[]>(`/admin/webhooks/${id}/deliveries`),
+  },
+  // Meals come from Mealie. Reading and ticking the shopping list need no
+  // sign-in; changing the plan needs a parent.
+  meals: {
+    status: () => fetchWithAuth<MealsStatus>('/meals/status'),
+    plan: (start: string, end: string) =>
+      fetchWithAuth<Meal[]>(`/meals/plan?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`),
+    add: (data: { date: string; meal: MealType; title?: string; recipe_id?: string }) =>
+      fetchWithAuth<Meal>('/meals/plan', { method: 'POST', body: JSON.stringify(data) }),
+    remove: (id: number) => fetchWithAuth(`/meals/plan/${id}`, { method: 'DELETE' }),
+    recipes: (search: string) => fetchWithAuth<MealRecipe[]>(`/meals/recipes?search=${encodeURIComponent(search)}`),
+    shopping: () => fetchWithAuth<ShoppingList | null>('/meals/shopping'),
+    check: (id: string, checked: boolean) =>
+      fetchWithAuth(`/meals/shopping/items/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ checked }) }),
   },
 };

@@ -1,0 +1,287 @@
+/* Meals (/meals). A shared screen, so it sits in the House frame like the
+   picker. Tokens and dials only: nothing here tests which theme it is in. */
+
+.screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+}
+
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+  box-sizing: border-box;
+}
+
+@media (min-width: 720px) {
+  .page { padding: 34px 44px var(--space-8); }
+}
+
+/* ---------- Top ---------- */
+.top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.top > :last-child { justify-self: end; }
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  justify-self: start;
+  border: 0;
+  border-radius: var(--oc-radius-pill);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.back { white-space: nowrap; }
+.back :global(.oc-icon) { width: 20px; height: 20px; }
+
+/* On a phone the two buttons need the room; the mark steps aside. */
+@media (max-width: 480px) {
+  .mark { display: none; }
+}
+.back:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+
+.hello {
+  margin: var(--space-5) 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-variation-settings: var(--display-axes);
+  letter-spacing: var(--display-tracking);
+  font-size: 30px;
+  line-height: 34px;
+  color: var(--ink);
+}
+
+.hello span { color: var(--ink-muted); }
+
+@media (min-width: 720px) {
+  .hello { font-size: 44px; line-height: 48px; }
+}
+
+.banner {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--oc-radius-md);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+  border-left: 4px solid var(--urgent);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.tabs { margin: var(--space-5) 0 0; }
+
+.body { margin-top: var(--space-5); }
+
+/* ---------- Shared bits ---------- */
+.label {
+  margin: 0 0 var(--space-2);
+  font-size: var(--type-label-size);
+  line-height: var(--type-label-line);
+  font-weight: var(--type-label-weight);
+  letter-spacing: var(--type-label-tracking);
+  text-transform: var(--label-case);
+  color: var(--ink-muted);
+}
+
+.empty,
+.nothing {
+  margin: 0;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.empty {
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--r-row);
+  background: var(--surface-sunk);
+  text-align: center;
+  font-size: 17px;
+}
+
+.nothing { font-size: 15px; padding: var(--space-1) 0; }
+
+.error {
+  margin: var(--space-2) 0;
+  color: var(--urgent);
+  font-weight: 600;
+}
+
+/* ---------- Tonight ---------- */
+.tonight {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tonightCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--r-row);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+  text-align: center;
+}
+
+.tonightWell {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: var(--space-3);
+  border-radius: var(--r-well);
+  background: var(--surface-sunk);
+  color: var(--ink);
+}
+
+.tonightWell :global(.oc-icon) { width: 36px; height: 36px; }
+
+.tonightTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking);
+  font-size: 34px;
+  line-height: 38px;
+  color: var(--ink);
+}
+
+.tonightMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-2) 0 0;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.tonightMeta :global(.oc-icon) { width: 18px; height: 18px; }
+
+/* ---------- Week ---------- */
+.week {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.day {
+  display: grid;
+  gap: var(--row-gap);
+}
+
+.meal { cursor: default; }
+
+.remove {
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--oc-radius-pill);
+  background: transparent;
+  color: var(--ink-muted);
+  font-family: var(--font-text);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.remove:hover { color: var(--ink); }
+.remove:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: var(--space-6) 0 0;
+  color: var(--ink-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hint :global(.oc-icon) { width: 18px; height: 18px; }
+
+.link {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+/* A parent's add form. */
+.add {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  border-radius: var(--r-row);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+}
+
+.add > :global(.oc-btn) { justify-self: start; }
+
+.addFields {
+  display: grid;
+  gap: var(--space-3);
+}
+
+@media (min-width: 720px) {
+  .addFields { grid-template-columns: 1fr 1fr 2fr; }
+}
+
+.addFields label { margin: 0; }
+
+.matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.match {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--r-chip);
+  background: var(--surface-sunk);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.match :global(.oc-icon) { width: 18px; height: 18px; }
+
+/* ---------- Shopping ---------- */
+.shopping {
+  display: grid;
+  gap: var(--row-gap);
+}

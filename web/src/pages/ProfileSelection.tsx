@@ -35,6 +35,10 @@ const AUTH_ERROR_KEYS: Record<string, string> = {
 
 const isLocked = (u: User) => u.has_pin || u.auth_providers.length > 0;
 
+// Where a sign-in may return to instead of the person's own screen: a
+// grown-up signing in from Meals goes back to Meals to change the plan.
+const RETURN_PATHS = ['/meals'];
+
 /** A person's avatar: their photo when they have one, else their initial. */
 function PersonAvatar({ user, size = 'md', className }: { user: User; size?: AvatarSize; className?: string }) {
   const [broken, setBroken] = useState(false);
@@ -194,6 +198,8 @@ export const ProfileSelection: React.FC = () => {
   // Errors bounced back from an OIDC provider (/login?auth_error=...).
   const authError = searchParams.get('auth_error');
   const authErrorProvider = searchParams.get('provider');
+  const next = RETURN_PATHS.find(p => p === searchParams.get('next'));
+  const [mealsOn, setMealsOn] = useState(false);
 
   useEffect(() => {
     api.users.list().then(data => {
@@ -203,6 +209,7 @@ export const ProfileSelection: React.FC = () => {
       }
     }).catch(console.error);
     api.auth.providers().then(setProviders).catch(() => setProviders([]));
+    api.meals.status().then(s => setMealsOn(s.enabled)).catch(() => setMealsOn(false));
   }, [navigate]);
 
   const providerName = useMemo(() => {
@@ -249,7 +256,7 @@ export const ProfileSelection: React.FC = () => {
     try {
       const auth = await api.auth.login({ user_id: user.id, ...extra });
       signIn(auth);
-      navigate('/');
+      navigate(next ?? '/');
     } catch (e) {
       if (e instanceof APIError && e.status === 403 && e.data?.code === 'admin_setup_required') {
         setError('');
@@ -330,7 +337,7 @@ export const ProfileSelection: React.FC = () => {
             <div className={styles.oidc}>
               {step.kind === 'pin' && <div className={styles.divider}><span>{t('profile.or')}</span></div>}
               {linkedProviders.map(id => (
-                <a key={id} className={styles.oidcBtn} href={api.auth.oidcLoginURL(id, pendingUser.id)}>
+                <a key={id} className={styles.oidcBtn} href={api.auth.oidcLoginURL(id, pendingUser.id, next)}>
                   {t('profile.continueWith', { provider: providerName(id) })}
                   <Icon name="chev" />
                 </a>
@@ -476,6 +483,12 @@ export const ProfileSelection: React.FC = () => {
               <Icon name="lock" />
               {t('profile.continueWith', { provider: startProvider.name })}
             </a>
+          )}
+          {mealsOn && (
+            <button type="button" className={styles.wall} onClick={() => navigate('/meals')}>
+              <Icon name="dish" />
+              {t('entry.picker.meals')}
+            </button>
           )}
           <button type="button" className={styles.wall} onClick={() => navigate('/ambient')}>
             <Icon name="screen" />
