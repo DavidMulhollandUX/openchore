@@ -64,6 +64,13 @@ test.describe('Meals', () => {
     await expect(page.getByRole('button', { name: 'Put 2 avocados back on the list' })).toBeVisible();
     expect(sent).toContainEqual({ method: 'PUT', path: '/api/meals/shopping/items/i1', body: { checked: true } });
 
+    // Mealie opens inside OpenChore, not in a new window.
+    await page.getByRole('button', { name: 'Open in Mealie' }).click();
+    await expect(page).toHaveURL('/meals/mealie');
+    await expect(page.locator('iframe[title="Mealie"]')).toHaveAttribute('src', 'http://mealie.test');
+    await page.getByRole('button', { name: 'Meals', exact: true }).click();
+    await expect(page).toHaveURL('/meals');
+
     await page.getByRole('button', { name: "Who's here?" }).click();
     await expect(page).toHaveURL('/login');
   });

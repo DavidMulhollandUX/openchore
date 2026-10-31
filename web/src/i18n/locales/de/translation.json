@@ -1186,6 +1186,7 @@
     "tonightIs": "Heute Abend: {{title}}",
     "today": "Heute",
     "openMealie": "In Mealie öffnen",
+    "backToMeals": "Essen",
     "error": "Mealie ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
     "notSetUp": "Essen ist noch nicht eingerichtet. Ein Erwachsener kann Mealie verbinden (siehe docs/meals.md).",
     "nothingTonight": "Für heute Abend ist nichts geplant.",

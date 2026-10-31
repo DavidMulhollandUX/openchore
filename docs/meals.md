@@ -7,8 +7,12 @@ a Meals screen in the House style with three tabs:
 - **Week**: today and the next six days.
 - **Shopping**: the household's shopping list, with a check on each item.
 
-**Who's here?** goes back to the picker. **Open in Mealie** opens Mealie
-itself, which is where recipes are added and edited.
+**Who's here?** goes back to the picker. **Open in Mealie** shows Mealie
+itself inside OpenChore (`/meals/mealie`, with a **Meals** button to come
+back), which is where recipes are added and edited. Mealie's sign-in works in
+that frame when it's on the same host as OpenChore (a different port is
+fine), which is how `compose.yaml` runs it. The Mealie screen doesn't idle
+out to the wall display, because OpenChore can't see taps inside the frame.
 
 The data comes from [Mealie](https://mealie.io), a self-hosted recipe
 manager. OpenChore talks to Mealie from the server, so the tablet never

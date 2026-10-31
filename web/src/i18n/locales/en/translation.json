@@ -1186,6 +1186,7 @@
     "tonightIs": "Tonight: {{title}}",
     "today": "Today",
     "openMealie": "Open in Mealie",
+    "backToMeals": "Meals",
     "error": "Couldn't reach Mealie. Try again in a moment.",
     "notSetUp": "Meals aren't set up yet. A grown-up can connect Mealie (see docs/meals.md).",
     "nothingTonight": "Nothing planned for tonight.",

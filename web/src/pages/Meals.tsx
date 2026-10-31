@@ -312,10 +312,10 @@ export const Meals: React.FC = () => {
           </button>
           <BrandMark wordmark={false} className={styles.mark} />
           {status?.mealie_url ? (
-            <a className={styles.back} href={status.mealie_url} target="_blank" rel="noopener noreferrer">
+            <button type="button" className={styles.back} onClick={() => navigate('/meals/mealie')}>
               {t('meals.openMealie')}
               <Icon name="chev" />
-            </a>
+            </button>
           ) : <span />}
         </header>
 

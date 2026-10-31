@@ -14,7 +14,9 @@ import { useIdleRedirect } from './hooks/useIdleRedirect';
 // Dev-only design-system gallery at /design. It renders outside the auth
 // gate so it works without the API; the import is dropped from prod builds.
 const DesignGallery = import.meta.env.DEV ? React.lazy(() => import('./design/gallery/DesignGallery')) : null;
-const IDLE_EXEMPT = import.meta.env.DEV ? ['/setup', '/upload', '/design'] : ['/setup', '/upload'];
+// Taps inside Mealie's frame never reach this page, so it can't tell when
+// someone is using it; it doesn't idle out.
+const IDLE_EXEMPT = import.meta.env.DEV ? ['/setup', '/upload', '/meals/mealie', '/design'] : ['/setup', '/upload', '/meals/mealie'];
 
 // Screens only a parent (or first-run setup) opens load on demand, so a kid's
 // tablet doesn't download and parse the whole Manage console to show the picker.
@@ -25,6 +27,7 @@ const Reports = React.lazy(() => loadReports().then(m => ({ default: m.Reports }
 const SetupWizard = React.lazy(() => import('./pages/SetupWizard').then(m => ({ default: m.SetupWizard })));
 const PhotoUpload = React.lazy(() => import('./pages/PhotoUpload').then(m => ({ default: m.PhotoUpload })));
 const Meals = React.lazy(() => import('./pages/Meals').then(m => ({ default: m.Meals })));
+const MealieFrame = React.lazy(() => import('./pages/MealieFrame').then(m => ({ default: m.MealieFrame })));
 
 const RequireAdmin: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { user } = useAuth();
@@ -92,6 +95,7 @@ export const App: React.FC = () => {
         } />
         <Route path="/ambient" element={<AmbientDashboard />} />
         <Route path="/meals" element={<Meals />} />
+        <Route path="/meals/mealie" element={<MealieFrame />} />
         <Route
           path="/*"
           element={user ? <Dashboard /> : <SignedOut />}
