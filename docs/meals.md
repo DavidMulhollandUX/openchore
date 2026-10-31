@@ -1,6 +1,6 @@
 # Meals
 
-The family picker has a **Meals** button next to **Wall display**. It opens
+The family picker has a **Meals** button at the top, next to the date. It opens
 a Meals screen in the House style with four tabs:
 
 - **Tonight**: today's dinner, or whatever else today has, with **See the
