@@ -232,6 +232,15 @@ export const AmbientDashboard: React.FC = () => {
               {fmtTime(now)}
             </time>
           </header>
+          {/* Reloads the whole page, so the tablet also picks up a new version. */}
+          <button
+            type="button"
+            className={styles.refresh}
+            aria-label={t('wall.refresh')}
+            onClick={(e) => { e.stopPropagation(); window.location.reload(); }}
+          >
+            <Icon name="refresh" />
+          </button>
 
           <div className={styles.doors}>
             {people.map((p) => <Door key={p.user.id} p={p} now={now} fmtTime={fmtTime} />)}

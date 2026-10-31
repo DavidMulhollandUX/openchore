@@ -1334,6 +1334,7 @@
       "evening": "Good evening."
     },
     "tapToStart": "Tap anywhere to start",
+    "refresh": "Refresh",
     "toGo_one": "{{count}} to go",
     "toGo_other": "{{count}} to go",
     "allDone": "All done",

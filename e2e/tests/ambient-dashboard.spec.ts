@@ -33,4 +33,15 @@ test.describe('Ambient Dashboard', () => {
     await page.locator('body').click({ position: { x: 100, y: 100 } });
     await expect(page).toHaveURL('/login', { timeout: 5_000 });
   });
+
+  test('the refresh button reloads the wall and stays on it', async ({ page }) => {
+    await page.goto('/ambient');
+    await expect(page.getByText('Emma').first()).toBeVisible({ timeout: 10_000 });
+
+    const reloaded = page.waitForEvent('load');
+    await page.getByRole('button', { name: 'Refresh' }).click();
+    await reloaded;
+    await expect(page).toHaveURL('/ambient');
+    await expect(page.getByText('Emma').first()).toBeVisible({ timeout: 10_000 });
+  });
 });
