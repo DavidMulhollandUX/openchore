@@ -13,7 +13,7 @@
   position: relative;
 }
 
-/* Small and quiet in the top corner; big enough to tap. The header keeps
+/* A round button in the top corner, easy to spot and tap. The header keeps
    clear of it so it never sits on the clock. */
 .refresh {
   position: absolute;
@@ -21,18 +21,19 @@
   right: var(--space-2);
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: transparent;
-  color: var(--ink-muted);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+  color: var(--ink);
   cursor: inherit;
 }
-.refresh:active { color: var(--ink); background: var(--surface-sunk); }
+.refresh:active { background: var(--surface-sunk); }
 .refresh:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
-.refresh :global(.oc-icon) { width: 22px; height: 22px; }
+.refresh :global(.oc-icon) { width: 26px; height: 26px; }
 
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-5); }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
@@ -41,7 +42,7 @@
 .logo i + i { margin-left: -5px; }
 .date { font-size: 17px; font-weight: 600; color: var(--ink-muted); }
 
-.hello { flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5); padding-right: 28px; }
+.hello { flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-5); padding-right: 52px; }
 .helloText { min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
 .greeting {
   margin: 0;
