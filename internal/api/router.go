@@ -39,6 +39,7 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 	reports := NewReportsHandler(s, dispatcher, discordNotifier, aiSvc)
 	authH := NewAuthHandler(s, auth.Sessions, dispatcher, auth.OIDC)
 	oidcH := auth.OIDC
+	meals := NewMealsHandler()
 
 	// Serve uploaded photos
 	_ = os.MkdirAll("data/uploads", 0750)
@@ -73,6 +74,13 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 
 		// Initial setup (only works when no users exist)
 		r.Post("/setup", setup.Setup)
+
+		// Meals (from Mealie): the shared tablet shows the plan and ticks
+		// the shopping list without signing in, like the wall display.
+		r.Get("/meals/status", meals.Status)
+		r.Get("/meals/plan", meals.Plan)
+		r.Get("/meals/shopping", meals.Shopping)
+		r.Put("/meals/shopping/items/{id}", meals.CheckItem)
 
 		// Authenticated routes (session cookie, session bearer, or API token)
 		r.Group(func(r chi.Router) {
@@ -212,6 +220,11 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 				r.Get("/admin/reports/ai-summary", reports.GetAISummary)
 				r.Post("/admin/tts/regenerate", chores.RegenerateAllTTS)
 				r.Post("/chores/{id}/tts/regenerate", chores.RegenerateChoreTTS)
+
+				// Changing the meal plan
+				r.Post("/meals/plan", meals.AddMeal)
+				r.Delete("/meals/plan/{id}", meals.RemoveMeal)
+				r.Get("/meals/recipes", meals.Recipes)
 
 				// Integration discovery: chores with triggers
 				r.Get("/chores/triggerable", triggers.ListTriggerable)

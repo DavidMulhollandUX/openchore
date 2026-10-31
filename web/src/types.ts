@@ -512,3 +512,39 @@ export interface AIReviewResult {
   would_approve: boolean;
   elapsed_ms: number;
 }
+
+// Meals, read from Mealie through the API (see docs/meals.md).
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'side' | 'snack' | 'drink' | 'dessert';
+
+export interface MealsStatus {
+  enabled: boolean;
+  mealie_url?: string;
+}
+
+export interface Meal {
+  id: number;
+  date: string;
+  meal: MealType;
+  title: string;
+  note?: string;
+  recipe_slug?: string;
+  total_time?: string;
+}
+
+export interface MealRecipe {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export interface ShoppingItem {
+  id: string;
+  label: string;
+  checked: boolean;
+}
+
+export interface ShoppingList {
+  id: string;
+  name: string;
+  items: ShoppingItem[];
+}

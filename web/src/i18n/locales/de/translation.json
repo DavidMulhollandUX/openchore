@@ -904,6 +904,7 @@
         "evening": "Guten Abend.",
         "morning": "Guten Morgen."
       },
+      "meals": "Essen",
       "nothingToday": "Heute nichts",
       "paused": "Macht gerade Pause",
       "toGo_one": "noch {{count}}",
@@ -1179,6 +1180,46 @@
     "signOutEverywhere": "Auf allen Geräten abmelden",
     "title": "Verknüpfte Konten",
     "unlink": "Trennen"
+  },
+  "meals": {
+    "title": "Essen.",
+    "tonightIs": "Heute Abend: {{title}}",
+    "today": "Heute",
+    "openMealie": "In Mealie öffnen",
+    "error": "Mealie ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
+    "notSetUp": "Essen ist noch nicht eingerichtet. Ein Erwachsener kann Mealie verbinden (siehe docs/meals.md).",
+    "nothingTonight": "Für heute Abend ist nichts geplant.",
+    "nothingPlanned": "Nichts geplant",
+    "noList": "In Mealie gibt es noch keine Einkaufsliste.",
+    "listEmpty": "Die Liste ist leer.",
+    "grownUpsHint": "Erwachsene können die Mahlzeiten der Woche ändern.",
+    "signIn": "Anmelden",
+    "tick": "{{item}} abhaken",
+    "untick": "{{item}} wieder auf die Liste setzen",
+    "remove": "{{title}} entfernen",
+    "removeShort": "Entfernen",
+    "addTitle": "Mahlzeit hinzufügen",
+    "day": "Tag",
+    "meal": "Mahlzeit",
+    "what": "Rezept oder Gericht",
+    "whatPlaceholder": "Rezept eintippen oder Gericht nennen",
+    "recipes": "Passende Rezepte",
+    "add": "Hinzufügen",
+    "tabs": {
+      "label": "Essen",
+      "tonight": "Heute Abend",
+      "week": "Woche",
+      "shopping": "Einkauf"
+    },
+    "type": {
+      "breakfast": "Frühstück",
+      "lunch": "Mittagessen",
+      "dinner": "Abendessen",
+      "side": "Beilage",
+      "snack": "Snack",
+      "drink": "Getränk",
+      "dessert": "Nachtisch"
+    }
   },
   "profile": {
     "authError": {

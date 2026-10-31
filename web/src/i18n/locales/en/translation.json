@@ -904,6 +904,7 @@
         "evening": "Good evening.",
         "morning": "Good morning."
       },
+      "meals": "Meals",
       "nothingToday": "Nothing today",
       "paused": "Taking a break",
       "toGo_one": "{{count}} to go",
@@ -1179,6 +1180,46 @@
     "signOutEverywhere": "Sign out on all devices",
     "title": "Linked accounts",
     "unlink": "Unlink"
+  },
+  "meals": {
+    "title": "Meals.",
+    "tonightIs": "Tonight: {{title}}",
+    "today": "Today",
+    "openMealie": "Open in Mealie",
+    "error": "Couldn't reach Mealie. Try again in a moment.",
+    "notSetUp": "Meals aren't set up yet. A grown-up can connect Mealie (see docs/meals.md).",
+    "nothingTonight": "Nothing planned for tonight.",
+    "nothingPlanned": "Nothing planned",
+    "noList": "There's no shopping list in Mealie yet.",
+    "listEmpty": "The list is empty.",
+    "grownUpsHint": "Grown-ups can change the week's meals.",
+    "signIn": "Sign in",
+    "tick": "Tick off {{item}}",
+    "untick": "Put {{item}} back on the list",
+    "remove": "Remove {{title}}",
+    "removeShort": "Remove",
+    "addTitle": "Add a meal",
+    "day": "Day",
+    "meal": "Meal",
+    "what": "Recipe or dish",
+    "whatPlaceholder": "Start typing a recipe, or name a dish",
+    "recipes": "Matching recipes",
+    "add": "Add",
+    "tabs": {
+      "label": "Meals",
+      "tonight": "Tonight",
+      "week": "Week",
+      "shopping": "Shopping"
+    },
+    "type": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "side": "Side",
+      "snack": "Snack",
+      "drink": "Drink",
+      "dessert": "Dessert"
+    }
   },
   "profile": {
     "authError": {

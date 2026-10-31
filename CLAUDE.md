@@ -15,6 +15,7 @@ Family chore-tracking PWA: Go API + React/TypeScript frontend, SQLite storage, o
 - `internal/store/` — SQLite DAO (one method per query, `context.Context`-aware).
 - `internal/webhook/` — async dispatcher, HMAC-SHA256 signing, expiry/decay checkers.
 - `internal/config/` — YAML loader; **seeds only when DB is empty** (except `auth:`, read every start).
+- `internal/mealie/` — Mealie client behind the Meals screen (`internal/api/meals.go`); on when `MEALIE_URL` + `MEALIE_API_TOKEN` are set. See `docs/meals.md`.
 - `internal/llm/` (OpenAI-compatible chat client), `internal/tts/` (speech client + per-chore audio), `internal/discord/` — optional integrations. Wiring lives in `internal/api/ai.go` and `cmd/server/main.go`.
 - `migrations/` — numbered `*_up.sql` / `*_down.sql` pairs.
 - `config/config.example.yaml` — dev seed data.

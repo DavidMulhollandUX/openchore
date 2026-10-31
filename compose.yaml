@@ -17,6 +17,12 @@ services:
       - TTS_BASE_URL=${TTS_BASE_URL:-}
       - TTS_API_KEY=${TTS_API_KEY:-}
       - TTS_MODEL=${TTS_MODEL:-}
+      # Meals: read from the mealie service below. Create an API token in
+      # Mealie (your profile → API Tokens), put it in .env as
+      # MEALIE_API_TOKEN, then `docker compose up -d` again. See docs/meals.md.
+      - MEALIE_URL=${MEALIE_URL:-http://mealie:9000}
+      - MEALIE_API_TOKEN=${MEALIE_API_TOKEN:-}
+      - MEALIE_PUBLIC_URL=${MEALIE_PUBLIC_URL:-http://localhost:9925}
     volumes:
       - openchore-data:/data
       - ./config:/app/config:ro
@@ -41,6 +47,36 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+  # Mealie, the recipe manager behind the Meals screen. It needs its own
+  # address (it can't run under a sub-path), so it gets its own port. Its
+  # colours are set to OpenChore's House theme.
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v3.29.0
+    container_name: openchore-mealie
+    restart: unless-stopped
+    ports:
+      - "${MEALIE_PORT:-9925}:9000"
+    environment:
+      - TZ=America/Los_Angeles
+      - ALLOW_SIGNUP=false
+      - BASE_URL=${MEALIE_PUBLIC_URL:-http://localhost:9925}
+      - THEME_LIGHT_PRIMARY=#1a1a1c
+      - THEME_LIGHT_ACCENT=#5e5c58
+      - THEME_LIGHT_SECONDARY=#5e5c58
+      - THEME_LIGHT_WARNING=#87580a
+      - THEME_LIGHT_ERROR=#b3401a
+      - THEME_DARK_PRIMARY=#f2efe9
+      - THEME_DARK_ACCENT=#aba69d
+      - THEME_DARK_SECONDARY=#aba69d
+      - THEME_DARK_WARNING=#f0c46a
+      - THEME_DARK_ERROR=#ff9a78
+    volumes:
+      - mealie-data:/app/data
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
 
   # Optional: a local vision model for photo review, chore descriptions and
   # weekly summaries — Gemma 4 E4B on llama.cpp's server (~5 GB download on
@@ -88,5 +124,6 @@ services:
 
 volumes:
   openchore-data:
+  mealie-data:
   llama-models:
   kokoro-data:

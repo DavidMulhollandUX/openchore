@@ -24,6 +24,7 @@ const AdminDashboard = React.lazy(() => loadAdmin().then(m => ({ default: m.Admi
 const Reports = React.lazy(() => loadReports().then(m => ({ default: m.Reports })));
 const SetupWizard = React.lazy(() => import('./pages/SetupWizard').then(m => ({ default: m.SetupWizard })));
 const PhotoUpload = React.lazy(() => import('./pages/PhotoUpload').then(m => ({ default: m.PhotoUpload })));
+const Meals = React.lazy(() => import('./pages/Meals').then(m => ({ default: m.Meals })));
 
 const RequireAdmin: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { user } = useAuth();
@@ -90,6 +91,7 @@ export const App: React.FC = () => {
           <RequireAdmin><Reports /></RequireAdmin>
         } />
         <Route path="/ambient" element={<AmbientDashboard />} />
+        <Route path="/meals" element={<Meals />} />
         <Route
           path="/*"
           element={user ? <Dashboard /> : <SignedOut />}
