@@ -3,7 +3,7 @@
 // stroke weight comes from the --icon-stroke dial.
 //
 // `bin` and `broom` were added for common chore emoji (🗑️, 🧹) in the same
-// style as the rest of the set.
+// style as the rest of the set, and `refresh` for the wall display.
 
 export type IconShape =
   | { tag: 'path'; d: string; fill?: string }
@@ -52,6 +52,7 @@ export const ICONS = {
   back: [p('M14.5 6l-6 6 6 6')],
   chev: [p('M9.5 6l6 6-6 6')],
   plus: [p('M12 5v14M5 12h14')],
+  refresh: [p('M19.5 12a7.5 7.5 0 1 1-2.2-5.3'), p('M19.5 4v4.5H15')],
   people: [c(9, 8.5, 3.5), p('M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5'), p('M15.5 5.2a3.5 3.5 0 0 1 0 6.6M18 14.8c2 .7 3.2 2.5 3.5 5.2')],
 } satisfies Record<string, IconShape[]>;
 

@@ -1334,6 +1334,7 @@
       "evening": "Guten Abend."
     },
     "tapToStart": "Tippen, um loszulegen",
+    "refresh": "Aktualisieren",
     "toGo_one": "noch {{count}}",
     "toGo_other": "noch {{count}}",
     "allDone": "Alles erledigt",
