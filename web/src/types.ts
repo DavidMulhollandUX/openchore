@@ -537,6 +537,51 @@ export interface MealRecipe {
   slug: string;
 }
 
+/** A recipe card on the Recipes tab. image is an /api path, when it has one. */
+export interface RecipeCard {
+  id: string;
+  name: string;
+  slug: string;
+  total_time?: string;
+  description?: string;
+  image?: string;
+}
+
+export interface RecipePage {
+  items: RecipeCard[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
+/** One ingredient line, or (with section) the heading of a group of them. */
+export interface RecipeIngredient {
+  section?: string;
+  text?: string;
+}
+
+/** A step or a note. text may hold simple Markdown. */
+export interface RecipeStep {
+  title?: string;
+  text: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  total_time: string;
+  prep_time: string;
+  cook_time: string;
+  yield: string;
+  servings: string;
+  ingredients: RecipeIngredient[];
+  steps: RecipeStep[];
+  notes: RecipeStep[];
+}
+
 export interface ShoppingItem {
   id: string;
   label: string;

@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { api } from '../api';
 import { useAuth } from '../AuthContext';
-import type { Meal, MealRecipe, MealType, MealsStatus, ShoppingList } from '../types';
+import type { Meal, MealRecipe, MealType, MealsStatus, RecipeCard, ShoppingList } from '../types';
 import { localDateStr } from '../utils';
 import { Button, ChoreRow, HouseScope, Icon, useMinuteClock, type IconName } from '../design';
 import { BrandMark } from '../components/BrandMark/BrandMark';
@@ -12,22 +12,36 @@ import { MEAL_ORDER, mealsByDay, parseDay, tonight, weekDays } from './Meals.dat
 import forms from '../styles/forms.module.css';
 import styles from './Meals.module.css';
 
-type Tab = 'tonight' | 'week' | 'shopping';
+type Tab = 'tonight' | 'week' | 'recipes' | 'shopping';
 
-const TAB_ICONS: Record<Tab, IconName> = { tonight: 'moon', week: 'cal', shopping: 'check' };
+const TAB_ICONS: Record<Tab, IconName> = { tonight: 'moon', week: 'cal', recipes: 'book', shopping: 'check' };
+const isTab = (v: string | null): v is Tab => v != null && v in TAB_ICONS;
 const REFRESH_MS = 60_000;
 
-/** One planned meal: a chore row's well and text, without a check. */
+/** Where a meal's recipe opens, when it has one. */
+const recipePath = (slug: string) => `/meals/recipes/${encodeURIComponent(slug)}`;
+
+/** One planned meal: a chore row's well and text, without a check. A meal
+ *  made from a recipe opens it. */
 function MealRow({ meal, onRemove, busy }: { meal: Meal; onRemove?: () => void; busy?: boolean }) {
   const { t } = useTranslation();
   const meta = [t(`meals.type.${meal.meal}`), meal.total_time].filter(Boolean).join(' · ');
+  const text = (
+    <>
+      <span className="oc-chore__title">{meal.title}</span>
+      <span className="oc-chore__meta"><span>{meta}</span></span>
+    </>
+  );
   return (
     <div className={clsx('oc-chore', 'oc-choreCard', styles.meal)} data-cat="daily">
       <span className="oc-chore__well"><Icon name="dish" /></span>
-      <span className="oc-chore__txt">
-        <span className="oc-chore__title">{meal.title}</span>
-        <span className="oc-chore__meta"><span>{meta}</span></span>
-      </span>
+      {meal.recipe_slug ? (
+        <Link to={recipePath(meal.recipe_slug)} className={clsx('oc-chore__txt', styles.mealLink)}>
+          {text}
+        </Link>
+      ) : (
+        <span className="oc-chore__txt">{text}</span>
+      )}
       {onRemove && (
         <button
           type="button"
@@ -138,6 +152,101 @@ function AddMeal({ days, onAdded }: { days: string[]; onAdded: () => void }) {
   );
 }
 
+const DEBOUNCE_MS = 250;
+
+/** The household's recipes from Mealie, to browse and open. */
+function RecipesTab({ canEdit, mealieUrl }: { canEdit: boolean; mealieUrl?: string }) {
+  const { t } = useTranslation();
+  const searchId = useId();
+  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  const [cards, setCards] = useState<RecipeCard[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // A new search starts again from the first page.
+  useEffect(() => {
+    let current = true;
+    setBusy(true);
+    api.meals.cookbook(query, 1)
+      .then(p => {
+        if (!current) return;
+        setCards(p.items);
+        setTotal(p.total);
+        setPage(1);
+        setError('');
+      })
+      .catch(() => { if (current) setError(t('meals.error')); })
+      .finally(() => { if (current) { setBusy(false); setLoaded(true); } });
+    return () => { current = false; };
+  }, [query, t]);
+
+  const more = async () => {
+    setBusy(true);
+    try {
+      const p = await api.meals.cookbook(query, page + 1);
+      setCards(c => [...c, ...p.items.filter(n => !c.some(o => o.id === n.id))]);
+      setTotal(p.total);
+      setPage(page + 1);
+    } catch {
+      setError(t('meals.error'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className={styles.recipes} aria-label={t('meals.tabs.recipes')}>
+      <div className={clsx(forms.formGroup, styles.search)}>
+        <label className={forms.label} htmlFor={searchId}>{t('meals.searchRecipes')}</label>
+        <input
+          id={searchId}
+          type="search"
+          className={forms.input}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder={t('meals.searchPlaceholder')}
+          autoComplete="off"
+        />
+      </div>
+      {error && <p className={styles.error} role="alert">{error}</p>}
+      {loaded && cards.length === 0 && !error && (
+        <p className={styles.empty}>{query ? t('meals.noRecipeMatch', { search: query }) : t('meals.noRecipes')}</p>
+      )}
+      <ul className={styles.cards}>
+        {cards.map(r => (
+          <li key={r.id}>
+            <Link to={recipePath(r.slug)} className={styles.card}>
+              {r.image
+                ? <img className={styles.cardImage} src={r.image} alt="" loading="lazy" />
+                : <span className={clsx(styles.cardImage, styles.cardWell)}><Icon name="dish" /></span>}
+              <span className={styles.cardName}>{r.name}</span>
+              {r.total_time && <span className={styles.cardMeta}><Icon name="clock" />{r.total_time}</span>}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {cards.length < total && (
+        <Button variant="quiet" onClick={more} disabled={busy}>{t('meals.moreRecipes')}</Button>
+      )}
+      {canEdit && mealieUrl && (
+        <p className={styles.hint}>
+          <Icon name="book" />
+          <a className={styles.link} href={mealieUrl} target="_blank" rel="noopener noreferrer">{t('meals.editInMealie')}</a>
+        </p>
+      )}
+    </section>
+  );
+}
+
 export const Meals: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -146,7 +255,11 @@ export const Meals: React.FC = () => {
   const canEdit = user?.role === 'admin';
   const persistent = session?.persistent ?? false;
 
-  const [tab, setTab] = useState<Tab>('tonight');
+  // The tab lives in the address, so coming back from a recipe lands on it.
+  const [params, setParams] = useSearchParams();
+  const tabParam = params.get('tab');
+  const tab: Tab = isTab(tabParam) ? tabParam : 'tonight';
+  const setTab = (id: Tab) => setParams(id === 'tonight' ? {} : { tab: id }, { replace: true });
   const [status, setStatus] = useState<MealsStatus | null>(null);
   const [meals, setMeals] = useState<Meal[]>([]);
   const [list, setList] = useState<ShoppingList | null>(null);
@@ -237,6 +350,11 @@ export const Meals: React.FC = () => {
             <p className={styles.label}>{t(`meals.type.${m.meal}`)}</p>
             <h2 className={styles.tonightTitle}>{m.title}</h2>
             {m.total_time && <p className={styles.tonightMeta}><Icon name="clock" />{m.total_time}</p>}
+            {m.recipe_slug && (
+              <Button icon="chev" className={styles.tonightRecipe} onClick={() => navigate(recipePath(m.recipe_slug!))}>
+                {t('meals.seeRecipe')}
+              </Button>
+            )}
           </article>
         ))}
       </section>
@@ -280,6 +398,8 @@ export const Meals: React.FC = () => {
         )}
       </>
     );
+  } else if (tab === 'recipes') {
+    body = <RecipesTab canEdit={canEdit} mealieUrl={status?.mealie_url} />;
   } else {
     body = list == null ? (
       <p className={styles.empty}>{t('meals.noList')}</p>
@@ -311,12 +431,7 @@ export const Meals: React.FC = () => {
             {t('entry.picker.whosHere')}
           </button>
           <BrandMark wordmark={false} className={styles.mark} />
-          {status?.mealie_url ? (
-            <button type="button" className={styles.back} onClick={() => navigate('/meals/mealie')}>
-              {t('meals.openMealie')}
-              <Icon name="chev" />
-            </button>
-          ) : <span />}
+          <span />
         </header>
 
         <h1 className={styles.hello}>

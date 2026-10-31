@@ -2,9 +2,13 @@ package api
 
 import (
 	"errors"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,12 +16,13 @@ import (
 )
 
 // MealsHandler serves the Meals screen from a Mealie server. Mealie stays the
-// place recipes are written; OpenChore shows the plan and the shopping list
-// on the shared tablet, and lets a signed-in parent change the plan.
+// place recipes are written; OpenChore shows the plan, the recipes and the
+// shopping list on the shared tablet, and lets a signed-in parent change the
+// plan.
 //
 // Meals is off unless MEALIE_URL and MEALIE_API_TOKEN are set. The token
 // stays on the server. MEALIE_PUBLIC_URL is where browsers reach Mealie (the
-// "Open in Mealie" link); it defaults to MEALIE_URL.
+// "Add or edit recipes in Mealie" link); it defaults to MEALIE_URL.
 type MealsHandler struct{}
 
 func NewMealsHandler() *MealsHandler {
@@ -260,4 +265,155 @@ func (h *MealsHandler) CheckItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// recipesPerPage is how many recipe cards one page of the Recipes tab holds.
+const recipesPerPage = 24
+
+// recipeImageFiles are the photo sizes Mealie keeps for a recipe.
+var recipeImageFiles = map[string]bool{
+	"original.webp": true, "min-original.webp": true, "tiny-original.webp": true,
+}
+
+var recipeIDPattern = regexp.MustCompile(`^[0-9a-fA-F-]{1,64}$`)
+
+type recipeCard struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	TotalTime   string `json:"total_time,omitempty"`
+	Description string `json:"description,omitempty"`
+	Image       string `json:"image,omitempty"`
+}
+
+// recipeImageURL is where the browser fetches a recipe photo: through
+// OpenChore, so it works wherever OpenChore does. The cache key changes
+// when the photo does.
+func recipeImageURL(rc mealie.Recipe, file string) string {
+	if rc.Image == "" || !recipeIDPattern.MatchString(rc.ID) {
+		return ""
+	}
+	return "/api/meals/recipe-images/" + rc.ID + "/" + file + "?v=" + url.QueryEscape(rc.Image)
+}
+
+func cardFrom(rc mealie.Recipe) recipeCard {
+	return recipeCard{
+		ID: rc.ID, Name: rc.Name, Slug: rc.Slug, TotalTime: rc.TotalTime,
+		Description: strings.TrimSpace(rc.Description),
+		Image:       recipeImageURL(rc, "min-original.webp"),
+	}
+}
+
+// Cookbook lists the household's recipes for the Recipes tab, A to Z,
+// ?search= to narrow, ?page= from 1. Anyone at the tablet can read them.
+func (h *MealsHandler) Cookbook(w http.ResponseWriter, r *http.Request) {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+	c := h.client(w)
+	if c == nil {
+		return
+	}
+	found, err := c.ListRecipes(r.Context(), strings.TrimSpace(r.URL.Query().Get("search")), page, recipesPerPage)
+	if err != nil {
+		mealieFailed(w, err)
+		return
+	}
+	items := make([]recipeCard, 0, len(found.Items))
+	for _, rc := range found.Items {
+		items = append(items, cardFrom(rc))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"items": items, "total": found.Total, "page": page, "per_page": recipesPerPage,
+	})
+}
+
+type ingredientView struct {
+	Section string `json:"section,omitempty"`
+	Text    string `json:"text,omitempty"`
+}
+
+type stepView struct {
+	Title string `json:"title,omitempty"`
+	Text  string `json:"text"`
+}
+
+// RecipeDetail returns one recipe for the recipe page.
+func (h *MealsHandler) RecipeDetail(w http.ResponseWriter, r *http.Request) {
+	c := h.client(w)
+	if c == nil {
+		return
+	}
+	rc, err := c.GetRecipe(r.Context(), urlParam(r, "slug"))
+	if err != nil {
+		mealieFailed(w, err)
+		return
+	}
+	ingredients := make([]ingredientView, 0, len(rc.Ingredients))
+	for _, in := range rc.Ingredients {
+		text := strings.TrimSpace(in.Display)
+		if text == "" {
+			text = strings.TrimSpace(in.Note)
+		}
+		if title := strings.TrimSpace(in.Title); title != "" {
+			ingredients = append(ingredients, ingredientView{Section: title})
+		}
+		if text != "" {
+			ingredients = append(ingredients, ingredientView{Text: text})
+		}
+	}
+	steps := make([]stepView, 0, len(rc.Steps))
+	for _, st := range rc.Steps {
+		if text := strings.TrimSpace(st.Text); text != "" {
+			steps = append(steps, stepView{Title: strings.TrimSpace(st.Title), Text: text})
+		}
+	}
+	notes := make([]stepView, 0, len(rc.Notes))
+	for _, n := range rc.Notes {
+		if text := strings.TrimSpace(n.Text); text != "" {
+			notes = append(notes, stepView{Title: strings.TrimSpace(n.Title), Text: text})
+		}
+	}
+	cookTime := rc.PerformTime
+	if cookTime == "" {
+		cookTime = rc.CookTime
+	}
+	var servings string
+	if rc.Servings > 0 {
+		servings = strconv.FormatFloat(rc.Servings, 'f', -1, 64)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"id": rc.ID, "name": rc.Name, "slug": rc.Slug,
+		"description": strings.TrimSpace(rc.Description),
+		"image":       recipeImageURL(rc.Recipe, "original.webp"),
+		"total_time":  rc.TotalTime, "prep_time": rc.PrepTime, "cook_time": cookTime,
+		"yield": strings.TrimSpace(rc.Yield), "servings": servings,
+		"ingredients": ingredients, "steps": steps, "notes": notes,
+	})
+}
+
+// RecipeImage passes a recipe photo on from Mealie.
+func (h *MealsHandler) RecipeImage(w http.ResponseWriter, r *http.Request) {
+	id, file := urlParam(r, "id"), urlParam(r, "file")
+	if !recipeIDPattern.MatchString(id) || !recipeImageFiles[file] {
+		writeError(w, http.StatusNotFound, "not found")
+		return
+	}
+	c := h.client(w)
+	if c == nil {
+		return
+	}
+	body, contentType, err := c.RecipeImage(r.Context(), id, file)
+	if err != nil {
+		mealieFailed(w, err)
+		return
+	}
+	defer body.Close()
+	if !strings.HasPrefix(contentType, "image/") {
+		contentType = "image/webp"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	io.Copy(w, body)
 }
