@@ -20,7 +20,7 @@ services:
       # Meals: read from the mealie service below. Create an API token in
       # Mealie (your profile → API Tokens), put it in .env as
       # MEALIE_API_TOKEN, then `docker compose up -d` again. See docs/meals.md.
-      - MEALIE_URL=http://mealie:9000
+      - MEALIE_URL=${MEALIE_URL:-http://mealie:9000}
       - MEALIE_API_TOKEN=${MEALIE_API_TOKEN:-}
       - MEALIE_PUBLIC_URL=${MEALIE_PUBLIC_URL:-http://localhost:9925}
     volumes:

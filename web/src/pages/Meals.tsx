@@ -54,14 +54,22 @@ function AddMeal({ days, onAdded }: { days: string[]; onAdded: () => void }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
+  // The week moves on at midnight; don't keep a day it no longer shows.
+  useEffect(() => {
+    if (!days.includes(date)) setDate(days[0]);
+  }, [days, date]);
+
   // Suggest recipes as the parent types; a pick is sent as the recipe.
   useEffect(() => {
     const q = text.trim();
     if (recipe || q.length < 2) { setMatches([]); return; }
+    let current = true;
     const timer = setTimeout(() => {
-      api.meals.recipes(q).then(setMatches).catch(() => setMatches([]));
+      api.meals.recipes(q)
+        .then(found => { if (current) setMatches(found); })
+        .catch(() => { if (current) setMatches([]); });
     }, 250);
-    return () => clearTimeout(timer);
+    return () => { current = false; clearTimeout(timer); };
   }, [text, recipe]);
 
   const submit = async (e: React.FormEvent) => {
@@ -142,7 +150,10 @@ export const Meals: React.FC = () => {
   const [list, setList] = useState<ShoppingList | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState<string | null>(null);
+  // Each row's write in flight, so one finishing doesn't free another.
+  const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
+  const startPending = (key: string) => setPending(p => new Set(p).add(key));
+  const endPending = (key: string) => setPending(p => { const n = new Set(p); n.delete(key); return n; });
 
   const today = localDateStr(clock);
   const days = useMemo(() => weekDays(parseDay(today)), [today]);
@@ -180,7 +191,7 @@ export const Meals: React.FC = () => {
   };
 
   const toggle = async (id: string, checked: boolean) => {
-    setBusy(id);
+    startPending(id);
     setList(l => l && { ...l, items: l.items.map(it => it.id === id ? { ...it, checked } : it) });
     try {
       await api.meals.check(id, checked);
@@ -188,19 +199,19 @@ export const Meals: React.FC = () => {
       setError(t('meals.error'));
       load();
     } finally {
-      setBusy(null);
+      endPending(id);
     }
   };
 
   const remove = async (m: Meal) => {
-    setBusy(`meal-${m.id}`);
+    startPending(`meal-${m.id}`);
     try {
       await api.meals.remove(m.id);
       setMeals(ms => ms.filter(x => x.id !== m.id));
     } catch {
       setError(t('meals.error'));
     } finally {
-      setBusy(null);
+      endPending(`meal-${m.id}`);
     }
   };
 
@@ -248,7 +259,7 @@ export const Meals: React.FC = () => {
                     <MealRow
                       key={m.id}
                       meal={m}
-                      busy={busy === `meal-${m.id}`}
+                      busy={pending.has(`meal-${m.id}`)}
                       onRemove={canEdit ? () => remove(m) : undefined}
                     />
                   ))}
@@ -280,7 +291,7 @@ export const Meals: React.FC = () => {
             icon="check"
             title={it.label}
             state={it.checked ? 'done' : 'todo'}
-            busy={busy === it.id}
+            busy={pending.has(it.id)}
             onToggle={() => toggle(it.id, !it.checked)}
             checkLabel={it.checked ? t('meals.untick', { item: it.label }) : t('meals.tick', { item: it.label })}
           />

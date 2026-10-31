@@ -479,7 +479,7 @@ export const ProfileSelection: React.FC = () => {
 
         <footer className={styles.foot}>
           {startProvider && (
-            <a className={styles.wall} href={api.auth.oidcLoginURL(startProvider.id)}>
+            <a className={styles.wall} href={api.auth.oidcLoginURL(startProvider.id, undefined, next)}>
               <Icon name="lock" />
               {t('profile.continueWith', { provider: startProvider.name })}
             </a>

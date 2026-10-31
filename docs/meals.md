@@ -56,8 +56,8 @@ first shopping list.
 | `MEALIE_PUBLIC_URL` | `http://localhost:9925` in compose | Where browsers reach Mealie, for **Open in Mealie** and Mealie's own `BASE_URL` |
 | `MEALIE_PORT` | `9925` | Host port for the Mealie container |
 
-Already running Mealie elsewhere? Remove the `mealie` service from
-`compose.yaml` and point `MEALIE_URL` at your server.
+Already running Mealie elsewhere? Set `MEALIE_URL` in `.env` to your
+server and remove the `mealie` service from `compose.yaml`.
 
 ## API
 
