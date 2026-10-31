@@ -428,7 +428,15 @@ export const ProfileSelection: React.FC = () => {
       <div className={styles.page}>
         <header className={styles.top}>
           <BrandMark />
-          <time className={styles.date} dateTime={clock.toISOString()}>{dateLabel}</time>
+          <div className={styles.topEnd}>
+            <time className={styles.date} dateTime={clock.toISOString()}>{dateLabel}</time>
+            {mealsOn && (
+              <button type="button" className={styles.meals} onClick={() => navigate('/meals')}>
+                <Icon name="dish" />
+                {t('entry.picker.meals')}
+              </button>
+            )}
+          </div>
         </header>
 
         <h1 className={styles.hello}>
@@ -483,12 +491,6 @@ export const ProfileSelection: React.FC = () => {
               <Icon name="lock" />
               {t('profile.continueWith', { provider: startProvider.name })}
             </a>
-          )}
-          {mealsOn && (
-            <button type="button" className={styles.wall} onClick={() => navigate('/meals')}>
-              <Icon name="dish" />
-              {t('entry.picker.meals')}
-            </button>
           )}
           <button type="button" className={styles.wall} onClick={() => navigate('/ambient')}>
             <Icon name="screen" />

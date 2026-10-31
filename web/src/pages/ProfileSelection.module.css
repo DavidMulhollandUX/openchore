@@ -27,6 +27,34 @@
   gap: var(--space-2) var(--space-4);
 }
 
+/* Meals sits at the top, raised, so it's easy to find from the tablet. */
+.topEnd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.meals {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--oc-radius-pill);
+  background: var(--surface-raised);
+  box-shadow: var(--lift);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.meals :global(.oc-icon) { width: 20px; height: 20px; }
+.meals:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+
 .date {
   font-size: 14px;
   line-height: 18px;
