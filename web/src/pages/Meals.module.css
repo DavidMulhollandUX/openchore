@@ -251,7 +251,7 @@
   .addFields { grid-template-columns: 1fr 1fr 2fr; }
 }
 
-.addFields label { margin: 0; }
+.addFields > div { margin: 0; }
 
 .matches {
   display: flex;

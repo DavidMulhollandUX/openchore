@@ -32,7 +32,10 @@ func newFakeMealie(t *testing.T) *fakeMealie {
 		},
 		items: map[string]map[string]any{
 			"i1": {"id": "i1", "shoppingListId": "l1", "display": "2 avocados", "note": "", "checked": false, "position": 0, "quantity": 2},
-			"i2": {"id": "i2", "shoppingListId": "l1", "display": "", "note": "Milk", "checked": true, "position": 1, "quantity": 1},
+			"i2": {"id": "i2", "shoppingListId": "l1", "display": "1 Milk", "note": "Milk", "checked": true, "position": 1, "quantity": 1, "food": nil, "unit": nil},
+			"i3": {"id": "i3", "shoppingListId": "l1", "display": "3 Eggs", "note": "Eggs", "checked": false, "position": 2, "quantity": 3},
+			"i0": {"id": "i0", "shoppingListId": "l1", "display": "500 g Flour", "note": "", "checked": false, "position": -1, "quantity": 500,
+				"food": map[string]any{"name": "Flour"}, "unit": map[string]any{"name": "g"}},
 		},
 	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.serve))
@@ -73,7 +76,7 @@ func (f *fakeMealie) serve(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodGet && path == "/api/households/shopping/lists":
 		json.NewEncoder(w).Encode(map[string]any{"items": []map[string]any{{"id": "l1", "name": "Groceries"}}})
 	case r.Method == http.MethodGet && path == "/api/households/shopping/lists/l1":
-		list := []map[string]any{f.items["i1"], f.items["i2"]}
+		list := []map[string]any{f.items["i1"], f.items["i2"], f.items["i3"], f.items["i0"]}
 		json.NewEncoder(w).Encode(map[string]any{"id": "l1", "name": "Groceries", "listItems": list})
 	case strings.HasPrefix(path, "/api/households/shopping/items/"):
 		item, ok := f.items[strings.TrimPrefix(path, "/api/households/shopping/items/")]
@@ -200,11 +203,20 @@ func TestMealsShoppingList(t *testing.T) {
 		} `json:"items"`
 	}
 	decodeBody(t, env.expectStatus(t, "GET", "/api/meals/shopping", nil, nil, http.StatusOK), &list)
-	if list.Name != "Groceries" || len(list.Items) != 2 {
+	if list.Name != "Groceries" || len(list.Items) != 4 {
 		t.Fatalf("unexpected list %+v", list)
 	}
-	if list.Items[0].Label != "2 avocados" || list.Items[1].Label != "Milk" || !list.Items[1].Checked {
-		t.Errorf("items not mapped: %+v", list.Items)
+	// In Mealie's position order, labelled the way Mealie's own list shows them:
+	// a plain note drops a quantity of one, a food with a unit keeps both.
+	var labels []string
+	for _, it := range list.Items {
+		labels = append(labels, it.Label)
+	}
+	if got := strings.Join(labels, "|"); got != "500 g Flour|2 avocados|Milk|3 Eggs" {
+		t.Errorf("labels = %q", got)
+	}
+	if !list.Items[2].Checked {
+		t.Errorf("Milk should be checked: %+v", list.Items[2])
 	}
 
 	// Anyone at the tablet can tick an item; the rest of the item goes back unchanged.

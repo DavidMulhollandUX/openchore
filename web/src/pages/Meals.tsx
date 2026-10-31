@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
@@ -53,6 +53,7 @@ function AddMeal({ days, onAdded }: { days: string[]; onAdded: () => void }) {
   const [matches, setMatches] = useState<MealRecipe[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const fieldId = useId();
 
   // The week moves on at midnight; don't keep a day it no longer shows.
   useEffect(() => {
@@ -94,30 +95,31 @@ function AddMeal({ days, onAdded }: { days: string[]; onAdded: () => void }) {
     <form className={styles.add} onSubmit={submit} aria-label={t('meals.addTitle')}>
       <h2 className={styles.label}>{t('meals.addTitle')}</h2>
       <div className={styles.addFields}>
-        <label className={forms.formGroup}>
-          <span className={forms.label}>{t('meals.day')}</span>
-          <select className={forms.input} value={date} onChange={e => setDate(e.target.value)}>
+        <div className={forms.formGroup}>
+          <label className={forms.label} htmlFor={`${fieldId}-day`}>{t('meals.day')}</label>
+          <select id={`${fieldId}-day`} className={forms.input} value={date} onChange={e => setDate(e.target.value)}>
             {days.map(d => (
               <option key={d} value={d}>{parseDay(d).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short' })}</option>
             ))}
           </select>
-        </label>
-        <label className={forms.formGroup}>
-          <span className={forms.label}>{t('meals.meal')}</span>
-          <select className={forms.input} value={kind} onChange={e => setKind(e.target.value as MealType)}>
+        </div>
+        <div className={forms.formGroup}>
+          <label className={forms.label} htmlFor={`${fieldId}-meal`}>{t('meals.meal')}</label>
+          <select id={`${fieldId}-meal`} className={forms.input} value={kind} onChange={e => setKind(e.target.value as MealType)}>
             {MEAL_ORDER.map(m => <option key={m} value={m}>{t(`meals.type.${m}`)}</option>)}
           </select>
-        </label>
-        <label className={clsx(forms.formGroup, styles.what)}>
-          <span className={forms.label}>{t('meals.what')}</span>
+        </div>
+        <div className={clsx(forms.formGroup, styles.what)}>
+          <label className={forms.label} htmlFor={`${fieldId}-what`}>{t('meals.what')}</label>
           <input
+            id={`${fieldId}-what`}
             className={forms.input}
             value={recipe ? recipe.name : text}
             onChange={e => { setRecipe(null); setText(e.target.value); }}
             placeholder={t('meals.whatPlaceholder')}
             autoComplete="off"
           />
-        </label>
+        </div>
       </div>
       {matches.length > 0 && (
         <ul className={styles.matches} aria-label={t('meals.recipes')}>

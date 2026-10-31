@@ -11,6 +11,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -60,11 +62,29 @@ type NewPlanEntry struct {
 
 // ShoppingItem is one line on a shopping list.
 type ShoppingItem struct {
-	ID       string `json:"id"`
-	Display  string `json:"display"`
-	Note     string `json:"note"`
-	Checked  bool   `json:"checked"`
-	Position int    `json:"position"`
+	ID       string          `json:"id"`
+	Display  string          `json:"display"`
+	Note     string          `json:"note"`
+	Quantity float64         `json:"quantity"`
+	Food     json.RawMessage `json:"food"`
+	Unit     json.RawMessage `json:"unit"`
+	Checked  bool            `json:"checked"`
+	Position int             `json:"position"`
+}
+
+// Label is how Mealie's own list shows the item. Display always leads with
+// the quantity ("1 Milk"); for a plain note item with no food or unit,
+// Mealie's list shows just the note unless the quantity is more than one.
+func (i ShoppingItem) Label() string {
+	isSet := func(raw json.RawMessage) bool { return len(raw) > 0 && string(raw) != "null" }
+	if isSet(i.Food) || isSet(i.Unit) || strings.TrimSpace(i.Note) == "" {
+		return strings.TrimSpace(i.Display)
+	}
+	note := strings.TrimSpace(i.Note)
+	if i.Quantity > 1 {
+		return strconv.FormatFloat(i.Quantity, 'f', -1, 64) + " " + note
+	}
+	return note
 }
 
 // ShoppingList is a list and its items.
@@ -178,6 +198,7 @@ func (c *Client) FirstShoppingList(ctx context.Context) (*ShoppingList, error) {
 	if err := c.do(ctx, http.MethodGet, "/api/households/shopping/lists/"+url.PathEscape(page.Items[0].ID), nil, &list); err != nil {
 		return nil, err
 	}
+	sort.SliceStable(list.Items, func(a, b int) bool { return list.Items[a].Position < list.Items[b].Position })
 	return &list, nil
 }
 

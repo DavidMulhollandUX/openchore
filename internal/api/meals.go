@@ -237,11 +237,7 @@ func (h *MealsHandler) Shopping(w http.ResponseWriter, r *http.Request) {
 	}
 	items := make([]shoppingItemView, 0, len(list.Items))
 	for _, it := range list.Items {
-		label := strings.TrimSpace(it.Display)
-		if label == "" {
-			label = strings.TrimSpace(it.Note)
-		}
-		items = append(items, shoppingItemView{ID: it.ID, Label: label, Checked: it.Checked})
+		items = append(items, shoppingItemView{ID: it.ID, Label: it.Label(), Checked: it.Checked})
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"id": list.ID, "name": list.Name, "items": items})
 }
