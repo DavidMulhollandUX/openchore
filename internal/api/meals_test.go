@@ -72,7 +72,33 @@ func (f *fakeMealie) serve(w http.ResponseWriter, r *http.Request) {
 		f.deleted = append(f.deleted, id)
 		w.Write([]byte(`{}`))
 	case r.Method == http.MethodGet && path == "/api/recipes":
-		json.NewEncoder(w).Encode(map[string]any{"items": []map[string]any{{"id": "r1", "name": "Tacos", "slug": "tacos"}}})
+		f.query = r.URL.RawQuery
+		json.NewEncoder(w).Encode(map[string]any{"total": 1, "items": []map[string]any{
+			{"id": "0b6e5c1a-0000-4000-8000-000000000001", "name": "Tacos", "slug": "tacos", "totalTime": "30 min",
+				"description": " Crunchy. ", "image": "ab12"},
+		}})
+	case r.Method == http.MethodGet && path == "/api/recipes/tacos":
+		json.NewEncoder(w).Encode(map[string]any{
+			"id": "0b6e5c1a-0000-4000-8000-000000000001", "name": "Tacos", "slug": "tacos", "image": nil,
+			"totalTime": "30 min", "prepTime": "10 min", "performTime": nil, "cookTime": "20 min",
+			"recipeYield": "4 tacos", "recipeServings": 2.0, "description": nil,
+			"recipeIngredient": []map[string]any{
+				{"title": "Filling", "display": "500 g mince", "note": ""},
+				{"title": nil, "display": "", "note": "Salsa"},
+				{"title": nil, "display": "", "note": ""},
+			},
+			"recipeInstructions": []map[string]any{
+				{"title": "", "text": "Brown the **mince**."},
+				{"title": "Serve", "text": "Fill the shells."},
+				{"title": "", "text": "  "},
+			},
+			"notes": []map[string]any{{"title": "Tip", "text": "Warm the shells."}},
+		})
+	case r.Method == http.MethodGet && path == "/api/recipes/missing":
+		http.Error(w, `{"detail":"nope"}`, http.StatusNotFound)
+	case r.Method == http.MethodGet && path == "/api/media/recipes/0b6e5c1a-0000-4000-8000-000000000001/images/min-original.webp":
+		w.Header().Set("Content-Type", "image/webp")
+		w.Write([]byte("RIFFwebp"))
 	case r.Method == http.MethodGet && path == "/api/households/shopping/lists":
 		json.NewEncoder(w).Encode(map[string]any{"items": []map[string]any{{"id": "l1", "name": "Groceries"}}})
 	case r.Method == http.MethodGet && path == "/api/households/shopping/lists/l1":
@@ -228,4 +254,75 @@ func TestMealsShoppingList(t *testing.T) {
 		t.Fatalf("item after tick: %v", item)
 	}
 	env.expectStatus(t, "PUT", "/api/meals/shopping/items/missing", map[string]any{"checked": true}, nil, http.StatusNotFound)
+}
+
+func TestMealsCookbook(t *testing.T) {
+	env := setupTest(t)
+	fake := newFakeMealie(t)
+
+	// Anyone at the tablet can browse recipes, A to Z.
+	var page struct {
+		Items []map[string]any `json:"items"`
+		Total int              `json:"total"`
+		Page  int              `json:"page"`
+	}
+	decodeBody(t, env.expectStatus(t, "GET", "/api/meals/cookbook?search=taco&page=2", nil, nil, http.StatusOK), &page)
+	if page.Total != 1 || page.Page != 2 || len(page.Items) != 1 {
+		t.Fatalf("unexpected page %+v", page)
+	}
+	card := page.Items[0]
+	if card["name"] != "Tacos" || card["description"] != "Crunchy." || card["total_time"] != "30 min" ||
+		card["image"] != "/api/meals/recipe-images/0b6e5c1a-0000-4000-8000-000000000001/min-original.webp?v=ab12" {
+		t.Errorf("card not mapped: %v", card)
+	}
+	for _, want := range []string{"search=taco", "page=2", "orderBy=name"} {
+		if !strings.Contains(fake.query, want) {
+			t.Errorf("Mealie got query %q, want %s", fake.query, want)
+		}
+	}
+	env.expectStatus(t, "GET", "/api/meals/cookbook?page=-3", nil, nil, http.StatusOK)
+}
+
+func TestMealsRecipePage(t *testing.T) {
+	env := setupTest(t)
+	newFakeMealie(t)
+
+	var rc struct {
+		Name        string              `json:"name"`
+		Image       string              `json:"image"`
+		CookTime    string              `json:"cook_time"`
+		Servings    string              `json:"servings"`
+		Ingredients []map[string]string `json:"ingredients"`
+		Steps       []map[string]string `json:"steps"`
+		Notes       []map[string]string `json:"notes"`
+	}
+	decodeBody(t, env.expectStatus(t, "GET", "/api/meals/cookbook/tacos", nil, nil, http.StatusOK), &rc)
+	if rc.Name != "Tacos" || rc.Image != "" || rc.CookTime != "20 min" || rc.Servings != "2" {
+		t.Errorf("recipe not mapped: %+v", rc)
+	}
+	// A section title comes before its line; empty lines and steps are dropped.
+	if len(rc.Ingredients) != 3 || rc.Ingredients[0]["section"] != "Filling" ||
+		rc.Ingredients[1]["text"] != "500 g mince" || rc.Ingredients[2]["text"] != "Salsa" {
+		t.Errorf("ingredients = %v", rc.Ingredients)
+	}
+	if len(rc.Steps) != 2 || rc.Steps[0]["text"] != "Brown the **mince**." || rc.Steps[1]["title"] != "Serve" {
+		t.Errorf("steps = %v", rc.Steps)
+	}
+	if len(rc.Notes) != 1 || rc.Notes[0]["title"] != "Tip" {
+		t.Errorf("notes = %v", rc.Notes)
+	}
+	env.expectStatus(t, "GET", "/api/meals/cookbook/missing", nil, nil, http.StatusNotFound)
+}
+
+func TestMealsRecipeImage(t *testing.T) {
+	env := setupTest(t)
+	newFakeMealie(t)
+
+	resp := env.expectStatus(t, "GET", "/api/meals/recipe-images/0b6e5c1a-0000-4000-8000-000000000001/min-original.webp", nil, nil, http.StatusOK)
+	if ct := resp.Header.Get("Content-Type"); ct != "image/webp" {
+		t.Errorf("content type %q", ct)
+	}
+	// Only Mealie's photo files, for a recipe id.
+	env.expectStatus(t, "GET", "/api/meals/recipe-images/0b6e5c1a-0000-4000-8000-000000000001/secrets.txt", nil, nil, http.StatusNotFound)
+	env.expectStatus(t, "GET", "/api/meals/recipe-images/..%2Fusers/original.webp", nil, nil, http.StatusNotFound)
 }

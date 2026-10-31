@@ -1,4 +1,4 @@
-import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PointTransaction, Behaviour, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions, MealsStatus, Meal, MealType, MealRecipe, ShoppingList } from './types';
+import type { User, PersonColor, AuthSession, AuthProvider, LinkedIdentity, ScheduledChore, Chore, ChoreSchedule, PointsData, PointBalance, PointTransaction, Behaviour, PendingCompletion, Reward, RewardRedemption, RewardCommitment, SharedCommitmentPool, RedemptionHistory, UserStreakData, StreakRewardItem, ChoreTrigger, Webhook, WebhookDelivery, UserDecayConfig, APIToken, AIStatus, AIReviewResult, AIConfig, AIConnectionUpdate, AdminAuthConfig, AuthProviderInput, SignInOptions, MealsStatus, Meal, MealType, MealRecipe, Recipe, RecipePage, ShoppingList } from './types';
 
 const API_BASE = '/api';
 
@@ -420,6 +420,9 @@ export const api = {
       fetchWithAuth<Meal>('/meals/plan', { method: 'POST', body: JSON.stringify(data) }),
     remove: (id: number) => fetchWithAuth(`/meals/plan/${id}`, { method: 'DELETE' }),
     recipes: (search: string) => fetchWithAuth<MealRecipe[]>(`/meals/recipes?search=${encodeURIComponent(search)}`),
+    cookbook: (search: string, page: number) =>
+      fetchWithAuth<RecipePage>(`/meals/cookbook?search=${encodeURIComponent(search)}&page=${page}`),
+    recipe: (slug: string) => fetchWithAuth<Recipe>(`/meals/cookbook/${encodeURIComponent(slug)}`),
     shopping: () => fetchWithAuth<ShoppingList | null>('/meals/shopping'),
     check: (id: string, checked: boolean) =>
       fetchWithAuth(`/meals/shopping/items/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ checked }) }),

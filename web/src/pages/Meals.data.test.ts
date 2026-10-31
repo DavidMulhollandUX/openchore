@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Meal } from '../types';
-import { mealsByDay, tonight, weekDays } from './Meals.data';
+import { mealsByDay, recipeParagraphs, tonight, weekDays } from './Meals.data';
 
 const meal = (id: number, date: string, kind: Meal['meal'], title = `Meal ${id}`): Meal => ({ id, date, meal: kind, title });
 
@@ -35,5 +35,25 @@ describe('tonight', () => {
   it('falls back to whatever today has', () => {
     expect(tonight([meal(1, '2026-11-02', 'lunch')], '2026-11-02').map(m => m.id)).toEqual([1]);
     expect(tonight([], '2026-11-02')).toEqual([]);
+  });
+});
+
+describe('recipeParagraphs', () => {
+  it('keeps bold and italic, link words, and splits on blank lines', () => {
+    expect(recipeParagraphs('Brown the **mince**, then *rest*.\n\nSee [my tips](https://x.test) ![pic](a.png)')).toEqual([
+      [{ text: 'Brown the ' }, { text: 'mince', strong: true }, { text: ', then ' }, { text: 'rest', em: true }, { text: '.' }],
+      [{ text: 'See ' }, { text: 'my tips' }, { text: ' ' }],
+    ]);
+  });
+
+  it('joins wrapped lines and drops heading and list marks', () => {
+    expect(recipeParagraphs('## Prep\r\n- chop the onion\n  finely\n\n\n')).toEqual([
+      [{ text: 'Prep chop the onion finely' }],
+    ]);
+  });
+
+  it('leaves plain text alone and never makes HTML', () => {
+    expect(recipeParagraphs('Heat to 200°C <b>hot</b>')).toEqual([[{ text: 'Heat to 200°C <b>hot</b>' }]]);
+    expect(recipeParagraphs('   ')).toEqual([]);
   });
 });

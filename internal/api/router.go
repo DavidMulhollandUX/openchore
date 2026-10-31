@@ -81,6 +81,9 @@ func NewRouter(s *store.Store, dispatcher *webhook.Dispatcher, auth Auth) (*chi.
 		r.Get("/meals/plan", meals.Plan)
 		r.Get("/meals/shopping", meals.Shopping)
 		r.Put("/meals/shopping/items/{id}", meals.CheckItem)
+		r.Get("/meals/cookbook", meals.Cookbook)
+		r.Get("/meals/cookbook/{slug}", meals.RecipeDetail)
+		r.Get("/meals/recipe-images/{id}/{file}", meals.RecipeImage)
 
 		// Authenticated routes (session cookie, session bearer, or API token)
 		r.Group(func(r chi.Router) {

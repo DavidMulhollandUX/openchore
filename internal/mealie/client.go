@@ -34,11 +34,46 @@ func New(baseURL, token string) *Client {
 }
 
 // Recipe is the part of a Mealie recipe summary the Meals screen shows.
+// Image is a cache key, empty when the recipe has no photo.
 type Recipe struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Slug      string `json:"slug"`
-	TotalTime string `json:"totalTime"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Slug        string `json:"slug"`
+	TotalTime   string `json:"totalTime"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
+}
+
+// Ingredient is one line of a recipe. A line with a Title starts a section.
+type Ingredient struct {
+	Title   string `json:"title"`
+	Display string `json:"display"`
+	Note    string `json:"note"`
+}
+
+// Step is one instruction. Text may hold Markdown.
+type Step struct {
+	Title string `json:"title"`
+	Text  string `json:"text"`
+}
+
+// Note is a titled note at the end of a recipe.
+type Note struct {
+	Title string `json:"title"`
+	Text  string `json:"text"`
+}
+
+// RecipeDetail is a whole recipe as the recipe page shows it.
+type RecipeDetail struct {
+	Recipe
+	PrepTime    string       `json:"prepTime"`
+	PerformTime string       `json:"performTime"`
+	CookTime    string       `json:"cookTime"`
+	Yield       string       `json:"recipeYield"`
+	Servings    float64      `json:"recipeServings"`
+	Ingredients []Ingredient `json:"recipeIngredient"`
+	Steps       []Step       `json:"recipeInstructions"`
+	Notes       []Note       `json:"notes"`
 }
 
 // PlanEntry is one meal on one day.
@@ -178,6 +213,54 @@ func (c *Client) SearchRecipes(ctx context.Context, search string) ([]Recipe, er
 		return nil, err
 	}
 	return page.Items, nil
+}
+
+// RecipePage is one page of recipes and how many match in all.
+type RecipePage struct {
+	Items []Recipe `json:"items"`
+	Total int      `json:"total"`
+}
+
+// ListRecipes returns one page of recipes, A to Z, matching search (or all).
+func (c *Client) ListRecipes(ctx context.Context, search string, page, perPage int) (RecipePage, error) {
+	q := url.Values{}
+	if search != "" {
+		q.Set("search", search)
+	}
+	q.Set("page", strconv.Itoa(page))
+	q.Set("perPage", strconv.Itoa(perPage))
+	q.Set("orderBy", "name")
+	q.Set("orderDirection", "asc")
+	var out RecipePage
+	err := c.do(ctx, http.MethodGet, "/api/recipes?"+q.Encode(), nil, &out)
+	return out, err
+}
+
+// GetRecipe returns a whole recipe by its slug.
+func (c *Client) GetRecipe(ctx context.Context, slug string) (RecipeDetail, error) {
+	var out RecipeDetail
+	err := c.do(ctx, http.MethodGet, "/api/recipes/"+url.PathEscape(slug), nil, &out)
+	return out, err
+}
+
+// RecipeImage opens a recipe photo. file is one of Mealie's image names,
+// e.g. "min-original.webp". The caller closes the body.
+func (c *Client) RecipeImage(ctx context.Context, id, file string) (io.ReadCloser, string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet,
+		c.baseURL+"/api/media/recipes/"+url.PathEscape(id)+"/images/"+url.PathEscape(file), nil)
+	if err != nil {
+		return nil, "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, "", fmt.Errorf("mealie: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, "", &Error{Status: resp.StatusCode}
+	}
+	return resp.Body, resp.Header.Get("Content-Type"), nil
 }
 
 // FirstShoppingList returns the household's first shopping list with its

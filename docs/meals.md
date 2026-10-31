@@ -1,18 +1,23 @@
 # Meals
 
 The family picker has a **Meals** button next to **Wall display**. It opens
-a Meals screen in the House style with three tabs:
+a Meals screen in the House style with four tabs:
 
-- **Tonight**: today's dinner, or whatever else today has.
-- **Week**: today and the next six days.
+- **Tonight**: today's dinner, or whatever else today has, with **See the
+  recipe** when it was planned from one.
+- **Week**: today and the next six days. A meal planned from a recipe opens it.
+- **Recipes**: the household's Mealie recipes, A to Z, with a search box.
 - **Shopping**: the household's shopping list, with a check on each item.
 
-**Who's here?** goes back to the picker. **Open in Mealie** shows Mealie
-itself inside OpenChore (`/meals/mealie`, with a **Meals** button to come
-back), which is where recipes are added and edited. Mealie's sign-in works in
-that frame when it's on the same host as OpenChore (a different port is
-fine), which is how `compose.yaml` runs it. The Mealie screen doesn't idle
-out to the wall display, because OpenChore can't see taps inside the frame.
+A recipe opens on its own page (`/meals/recipes/<slug>`) in OpenChore's
+style: photo, times, ingredients to tick off as they go in, numbered steps
+and notes. Nothing ticked there is saved. The recipe page doesn't idle out
+to the wall display, so it stays up while someone cooks. **Meals** goes back
+to the tab it was opened from; **Who's here?** goes back to the picker.
+
+Recipes are still added and edited in Mealie itself. A signed-in grown-up
+sees **Add or edit recipes in Mealie** under the Recipes tab, which opens
+Mealie in a new tab.
 
 The data comes from [Mealie](https://mealie.io), a self-hosted recipe
 manager. OpenChore talks to Mealie from the server, so the tablet never
@@ -22,7 +27,7 @@ holds Mealie's token. Meals and chores are separate: cooking earns no points.
 
 | | Signed out (shared tablet) | Signed in as a grown-up |
 | --- | --- | --- |
-| See tonight, the week and the shopping list | Yes | Yes |
+| See tonight, the week, recipes and the shopping list | Yes | Yes |
 | Tick items off the shopping list | Yes | Yes |
 | Add or remove meals on the plan | No | Yes |
 
@@ -57,7 +62,7 @@ first shopping list.
 | --- | --- | --- |
 | `MEALIE_URL` | `http://mealie:9000` in compose | Where the OpenChore server reaches Mealie |
 | `MEALIE_API_TOKEN` | — | A Mealie API token. Meals is off without it |
-| `MEALIE_PUBLIC_URL` | `http://localhost:9925` in compose | Where browsers reach Mealie, for **Open in Mealie** and Mealie's own `BASE_URL` |
+| `MEALIE_PUBLIC_URL` | `http://localhost:9925` in compose | Where browsers reach Mealie, for **Add or edit recipes in Mealie** and Mealie's own `BASE_URL` |
 | `MEALIE_PORT` | `9925` | Host port for the Mealie container |
 
 Already running Mealie elsewhere? Set `MEALIE_URL` in `.env` to your
@@ -71,6 +76,9 @@ server and remove the `mealie` service from `compose.yaml`.
 | `GET /api/meals/plan?start=&end=` | anyone | Meals between two dates (YYYY-MM-DD, at most 31 days) |
 | `GET /api/meals/shopping` | anyone | The first shopping list and its items, or `null` |
 | `PUT /api/meals/shopping/items/{id}` | anyone | `{checked}` ticks or unticks an item |
+| `GET /api/meals/cookbook?search=&page=` | anyone | A page of 24 recipe cards, A to Z, and the `total` |
+| `GET /api/meals/cookbook/{slug}` | anyone | One recipe: times, ingredients, steps and notes |
+| `GET /api/meals/recipe-images/{id}/{file}` | anyone | A recipe photo, passed on from Mealie |
 | `POST /api/meals/plan` | admin | `{date, meal, recipe_id}` or `{date, meal, title}` |
 | `DELETE /api/meals/plan/{id}` | admin | Removes a meal |
 | `GET /api/meals/recipes?search=` | admin | Up to 20 Mealie recipes by name |

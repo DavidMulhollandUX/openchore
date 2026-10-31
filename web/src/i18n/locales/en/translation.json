@@ -1185,7 +1185,13 @@
     "title": "Meals.",
     "tonightIs": "Tonight: {{title}}",
     "today": "Today",
-    "openMealie": "Open in Mealie",
+    "seeRecipe": "See the recipe",
+    "searchRecipes": "Search recipes",
+    "searchPlaceholder": "Type a recipe name",
+    "noRecipes": "There are no recipes in Mealie yet.",
+    "noRecipeMatch": "No recipes match “{{search}}”.",
+    "moreRecipes": "Show more recipes",
+    "editInMealie": "Add or edit recipes in Mealie",
     "backToMeals": "Meals",
     "error": "Couldn't reach Mealie. Try again in a moment.",
     "notSetUp": "Meals aren't set up yet. A grown-up can connect Mealie (see docs/meals.md).",
@@ -1206,10 +1212,21 @@
     "whatPlaceholder": "Start typing a recipe, or name a dish",
     "recipes": "Matching recipes",
     "add": "Add",
+    "recipe": {
+      "ingredients": "Ingredients",
+      "method": "Method",
+      "notes": "Notes",
+      "prep": "Prep",
+      "cook": "Cook",
+      "total": "Total",
+      "serves": "Serves",
+      "missing": "That recipe isn't in Mealie any more."
+    },
     "tabs": {
       "label": "Meals",
       "tonight": "Tonight",
       "week": "Week",
+      "recipes": "Recipes",
       "shopping": "Shopping"
     },
     "type": {

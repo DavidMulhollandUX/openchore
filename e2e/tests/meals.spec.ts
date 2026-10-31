@@ -32,6 +32,18 @@ async function fakeMeals(page: Page) {
     if (path === '/api/meals/plan' && req.method() === 'GET') return route.fulfill({ json: meals });
     if (path === '/api/meals/shopping') return route.fulfill({ json: list });
     if (path.startsWith('/api/meals/shopping/items/')) return route.fulfill({ status: 204 });
+    if (path === '/api/meals/cookbook') {
+      return route.fulfill({ json: { items: [{ id: 'r1', name: 'Tacos', slug: 'tacos', total_time: '30 min' }], total: 1, page: 1, per_page: 24 } });
+    }
+    if (path === '/api/meals/cookbook/tacos') {
+      return route.fulfill({
+        json: {
+          id: 'r1', name: 'Tacos', slug: 'tacos', description: 'Crunchy.', image: '', total_time: '30 min', prep_time: '',
+          cook_time: '', yield: '', servings: '4', ingredients: [{ section: 'Filling' }, { text: '500 g mince' }],
+          steps: [{ text: 'Brown the **mince**.' }], notes: [],
+        },
+      });
+    }
     if (path === '/api/meals/recipes') return route.fulfill({ json: [{ id: 'r9', name: 'Pumpkin soup', slug: 'pumpkin-soup' }] });
     if (path === '/api/meals/plan' && req.method() === 'POST') {
       const added = { id: 3, date: (body as { date: string }).date, meal: 'dinner', title: 'Pumpkin soup' };
@@ -64,12 +76,16 @@ test.describe('Meals', () => {
     await expect(page.getByRole('button', { name: 'Put 2 avocados back on the list' })).toBeVisible();
     expect(sent).toContainEqual({ method: 'PUT', path: '/api/meals/shopping/items/i1', body: { checked: true } });
 
-    // Mealie opens inside OpenChore, not in a new window.
-    await page.getByRole('button', { name: 'Open in Mealie' }).click();
-    await expect(page).toHaveURL('/meals/mealie');
-    await expect(page.locator('iframe[title="Mealie"]')).toHaveAttribute('src', 'http://mealie.test');
+    // Recipes open inside OpenChore, and back returns to the same tab.
+    await page.getByRole('button', { name: 'Recipes' }).click();
+    await page.getByRole('link', { name: /Tacos/ }).click();
+    await expect(page).toHaveURL('/meals/recipes/tacos');
+    await expect(page.getByRole('heading', { name: 'Tacos', level: 1 })).toBeVisible();
+    await expect(page.getByText('Brown the mince.')).toBeVisible();
+    await page.getByRole('button', { name: '500 g mince' }).click();
+    await expect(page.getByRole('button', { name: '500 g mince' })).toHaveAttribute('aria-pressed', 'true');
     await page.getByRole('button', { name: 'Meals', exact: true }).click();
-    await expect(page).toHaveURL('/meals');
+    await expect(page).toHaveURL('/meals?tab=recipes');
 
     await page.getByRole('button', { name: "Who's here?" }).click();
     await expect(page).toHaveURL('/login');

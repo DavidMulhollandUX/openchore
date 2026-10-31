@@ -1185,7 +1185,13 @@
     "title": "Essen.",
     "tonightIs": "Heute Abend: {{title}}",
     "today": "Heute",
-    "openMealie": "In Mealie öffnen",
+    "seeRecipe": "Zum Rezept",
+    "searchRecipes": "Rezepte suchen",
+    "searchPlaceholder": "Rezeptname eingeben",
+    "noRecipes": "In Mealie gibt es noch keine Rezepte.",
+    "noRecipeMatch": "Keine Rezepte passen zu „{{search}}“.",
+    "moreRecipes": "Mehr Rezepte zeigen",
+    "editInMealie": "Rezepte in Mealie hinzufügen oder bearbeiten",
     "backToMeals": "Essen",
     "error": "Mealie ist gerade nicht erreichbar. Versuch es gleich noch einmal.",
     "notSetUp": "Essen ist noch nicht eingerichtet. Ein Erwachsener kann Mealie verbinden (siehe docs/meals.md).",
@@ -1206,10 +1212,21 @@
     "whatPlaceholder": "Rezept eintippen oder Gericht nennen",
     "recipes": "Passende Rezepte",
     "add": "Hinzufügen",
+    "recipe": {
+      "ingredients": "Zutaten",
+      "method": "Zubereitung",
+      "notes": "Notizen",
+      "prep": "Vorbereiten",
+      "cook": "Kochen",
+      "total": "Gesamt",
+      "serves": "Portionen",
+      "missing": "Dieses Rezept gibt es in Mealie nicht mehr."
+    },
     "tabs": {
       "label": "Essen",
       "tonight": "Heute Abend",
       "week": "Woche",
+      "recipes": "Rezepte",
       "shopping": "Einkauf"
     },
     "type": {
